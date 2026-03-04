@@ -164,7 +164,13 @@ th {
 
     <input type="text" id="newChapter" placeholder="নতুন অধ্যায়ের নাম লিখুন" style="width: 70%; padding: 10px;">
     <button onclick="addChapter()" style="margin-left: 10px; padding: 10px 20px;">+ চ্যাপ্টার যোগ করুন</button>
+    <button id="copyBtn" onclick="copyData()" style="margin-left: 10px; padding: 10px 20px; background: #555;">📋 ডাটা কপি করুন</button>
     <!-- Download/Upload removed as requested -->
+    <br>
+    <div style="margin-top:10px;">
+        <textarea id="importText" placeholder="ইখানে JSON পেস্ট করুন" style="width:100%;height:80px"></textarea>
+        <button onclick="pasteImport()" style="margin-top:5px;padding:8px 16px;">📥 পেস্ট ডাটা ইমপোর্ট</button>
+    </div>
 
     <table>
     <thead>
@@ -379,6 +385,25 @@ function addChapter() {
     localStorage.setItem("subjects", JSON.stringify(subjects));
     document.getElementById("newChapter").value = "";
     loadTable();
+}
+
+// Clipboard export / paste import
+function copyData() {
+    const subjects = localStorage.getItem('subjects') || '{}';
+    navigator.clipboard.writeText(subjects).then(() => {
+        alert('ডাটা ক্লিপবোর্ডে কপি করা হয়েছে, এখন WhatsApp-এ পেস্ট করুন।');
+    });
+}
+
+function pasteImport() {
+    const txt = document.getElementById('importText').value;
+    if(!txt) return;
+    try {
+        const imported = JSON.parse(txt);
+        handleImportedData(imported);
+    } catch(e) {
+        alert('ভুল JSON');
+    }
 }
 
 // Download and upload functionality removed per user request
