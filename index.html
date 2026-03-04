@@ -88,6 +88,8 @@ th {
 <th>সোর্স</th>
 <th>সিকিউ</th>
 <th>এমসিকিউ</th>
+<th>Engi</th>
+<th>Med</th>
 </tr>
 </thead>
 <tbody id="tableBody"></tbody>
@@ -121,9 +123,21 @@ function init() {
                 complete: false,
                 source: "",
                 cq: "",
-                mcq: ""
+                mcq: "",
+                engi: false,
+                med: false
             }))
         };
+        localStorage.setItem("subjects", JSON.stringify(subjects));
+    } else {
+        // মাইগ্রেশন: পুরনো ডেটায় নতুন ফিল্ড যোগ করুন
+        const subjects = JSON.parse(localStorage.getItem("subjects"));
+        Object.keys(subjects).forEach(subject => {
+            subjects[subject].forEach(row => {
+                if(row.engi === undefined) row.engi = false;
+                if(row.med === undefined) row.med = false;
+            });
+        });
         localStorage.setItem("subjects", JSON.stringify(subjects));
     }
     loadSubjects();
@@ -162,6 +176,8 @@ function loadTable() {
             <td><input value="${row.source}" onchange="updateField(${index}, 'source', this.value)"></td>
             <td><input value="${row.cq}" onchange="updateField(${index}, 'cq', this.value)"></td>
             <td><input value="${row.mcq}" onchange="updateField(${index}, 'mcq', this.value)"></td>
+            <td><input type="checkbox" ${row.engi ? "checked" : ""} onchange="updateField(${index}, 'engi', this.checked)"></td>
+            <td><input type="checkbox" ${row.med ? "checked" : ""} onchange="updateField(${index}, 'med', this.checked)"></td>
         `;
 
         tbody.appendChild(tr);
@@ -202,7 +218,9 @@ function addChapter() {
         complete: false,
         source: "",
         cq: "",
-        mcq: ""
+        mcq: "",
+        engi: false,
+        med: false
     });
 
     localStorage.setItem("subjects", JSON.stringify(subjects));
