@@ -135,6 +135,8 @@ th {
     <input type="text" id="newChapter" placeholder="নতুন অধ্যায়ের নাম লিখুন" style="width: 70%; padding: 10px;">
     <button onclick="addChapter()" style="margin-left: 10px; padding: 10px 20px;">+ চ্যাপ্টার যোগ করুন</button>
     <button id="downloadBtn" onclick="downloadData()" style="margin-left: 10px; padding: 10px 20px; background: #008CBA;">📥 ডাটা ডাউনলোড করুন</button>
+    <button id="importBtn" onclick="importData()" style="margin-left: 10px; padding: 10px 20px; background: #6b5bd6;">📤 ডাটা আপলোড করুন</button>
+    <input type="file" id="importFile" accept=".json,application/json" style="display: none;">
 
     <table>
     <thead>
@@ -358,6 +360,86 @@ function downloadData() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+}
+
+// Import (upload) functions
+function importData() {
+    const f = document.getElementById('importFile');
+    f.value = null;
+    f.click();
+}
+
+document.getElementById('importFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function() {
+        try {
+            const imported = JSON.parse(reader.result);
+            handleImportedData(imported);
+        } catch(err) {
+            alert('ইমপোর্ট করা ফাইলটি ভ্যালিড JSON নয়।');
+        }
+    };
+    reader.readAsText(file);
+});
+
+function handleImportedData(imported) {
+    if(typeof imported !== 'object' || Array.isArray(imported) || imported === null) {
+        alert('ইমপোর্ট করা ডাটা সঠিক ফরম্যাটে নেই।');
+        return;
+    }
+
+    const ok = confirm('OK = REPLACE local data with imported file. Cancel = MERGE (append non-duplicate chapters).');
+    if(ok) {
+        // Replace
+        localStorage.setItem('subjects', JSON.stringify(imported));
+        loadSubjects();
+        alert('Local data replaced with imported file.');
+        return;
+    }
+
+    // Merge
+    const subjects = JSON.parse(localStorage.getItem('subjects') || '{}');
+    Object.keys(imported).forEach(sub => {
+        const incomingChapters = Array.isArray(imported[sub]) ? imported[sub] : [];
+        if(!subjects[sub]) {
+            subjects[sub] = incomingChapters.map(r => ({
+                serial: r.serial || 0,
+                name: r.name || '',
+                complete: r.complete || false,
+                source: r.source || '',
+                cq: r.cq || '',
+                mcq: r.mcq || '',
+                engi: r.engi || false,
+                med: r.med || false
+            }));
+        } else {
+            // merge chapters, skip duplicates by name
+            incomingChapters.forEach(r => {
+                const exists = subjects[sub].some(s => s.name === r.name);
+                if(!exists) {
+                    subjects[sub].push({
+                        serial: 0,
+                        name: r.name || '',
+                        complete: r.complete || false,
+                        source: r.source || '',
+                        cq: r.cq || '',
+                        mcq: r.mcq || '',
+                        engi: r.engi || false,
+                        med: r.med || false
+                    });
+                }
+            });
+        }
+
+        // reassign serials
+        subjects[sub].forEach((row, i) => row.serial = i + 1);
+    });
+
+    localStorage.setItem('subjects', JSON.stringify(subjects));
+    loadSubjects();
+    alert('Import merged successfully.');
 }
 
 // Theme functions
