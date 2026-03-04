@@ -90,6 +90,7 @@ th {
 <th>এমসিকিউ</th>
 <th>Engi</th>
 <th>Med</th>
+<th>অ্যাকশন</th>
 </tr>
 </thead>
 <tbody id="tableBody"></tbody>
@@ -178,6 +179,7 @@ function loadTable() {
             <td><input value="${row.mcq}" onchange="updateField(${index}, 'mcq', this.value)"></td>
             <td><input type="checkbox" ${row.engi ? "checked" : ""} onchange="updateField(${index}, 'engi', this.checked)"></td>
             <td><input type="checkbox" ${row.med ? "checked" : ""} onchange="updateField(${index}, 'med', this.checked)"></td>
+            <td><button onclick="deleteChapter(${index})" style="background: #f44336; padding: 5px 10px; font-size: 12px;">ডিলিট</button></td>
         `;
 
         tbody.appendChild(tr);
@@ -189,6 +191,22 @@ function updateField(index, field, value) {
     const current = document.getElementById("subjectSelect").value;
     subjects[current][index][field] = value;
     localStorage.setItem("subjects", JSON.stringify(subjects));
+}
+
+function deleteChapter(index) {
+    if(confirm("এই চ্যাপ্টার ডিলিট করতে চান?")) {
+        const subjects = JSON.parse(localStorage.getItem("subjects"));
+        const current = document.getElementById("subjectSelect").value;
+        subjects[current].splice(index, 1);
+        
+        // পুনরায় serial নাম্বার আপডেট করুন
+        subjects[current].forEach((row, i) => {
+            row.serial = i + 1;
+        });
+        
+        localStorage.setItem("subjects", JSON.stringify(subjects));
+        loadTable();
+    }
 }
 
 function addSubject() {
