@@ -160,7 +160,7 @@ function loadSubjects() {
         btn.style.cssText = "background: #4CAF50; color: white; padding: 12px 15px; border-radius: 6px; cursor: pointer; display: flex; gap: 10px; align-items: center;";
         btn.innerHTML = `
             <span style="flex: 1;" onclick="selectSubject('${sub}')">${sub}</span>
-            <button onclick="deleteSubject('${sub}')" style="background: #f44336; border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">✕</button>
+            <button onclick="deleteSubject('${sub}')" style="background: transparent; border: 2px solid #ff4444; color: #ff4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1; hover: {background: #ff4444; color: white;};">❌</button>
         `;
         list.appendChild(btn);
     });
