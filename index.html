@@ -153,16 +153,9 @@ th {
 <div class="subject-management" style="padding: 15px; border-radius: 8px; margin-bottom: 20px;">
     <h3>📚 সাবজেক্টস ম্যানেজমেন্ট</h3>
     
-    <div style="margin-bottom: 15px; background: rgba(76,175,80,0.08); padding: 10px; border-radius: 6px; border-left: 4px solid var(--primary);">
-        <strong>⚡ দ্রুত সেটআপ:</strong>
-        <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px;">
-            <button onclick="quickSetup('জীববিজ্ঞান ২য় পত্র')" style="background: var(--primary); font-size: 12px; padding: 8px 12px;">জীববিজ্ঞান ২য় পত্র (12টি অধ্যায়)</button>
-        </div>
-    </div>
-    
     <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 8px;"><strong>সাবজেক্টের নাম লিখুন:</strong></label>
-        <input type="text" id="newSubject" placeholder="যেমন: Biology, Chemistry, Physics" style="width: 300px; padding: 10px;">
+        <label style="display: block; margin-bottom: 8px;"><strong>নতুন সাবজেক্ট তৈরি করুন:</strong></label>
+        <input type="text" id="newSubject" placeholder="যেমন: Chemistry, Physics" style="width: 300px; padding: 10px;">
         <button onclick="prepareNewSubject()" style="margin-left: 10px; padding: 10px 20px;">+ সাবজেক্ট তৈরি করুন</button>
     </div>
 
@@ -225,28 +218,34 @@ th {
 
 let newSubjectForChapters = null; // সাবজেক্ট যোগ করার সময় এখানে তথ্য রাখা হয়
 
-// দ্রুত সেটআপের জন্য প্রি-ফর্ম্যাটেড ডেটা
-const quickSetups = {
-    "জীববিজ্ঞান ২য় পত্র": [
-        "অধ্যায় ১: প্রাণীর বিভিন্নতা ও শ্রেণিবিন্যাস",
-        "অধ্যায় ২: প্রাণীর পরিচিতি (হাইড্রা, ঘাসফড়িং, রুই মাছ)",
-        "অধ্যায় ৩: পরিপাক ও শোষণ",
-        "অধ্যায় ৪: রক্ত ও সংবহন",
-        "অধ্যায় ৫: শ্বসন ও শ্বাসক্রিয়া",
-        "অধ্যায় ৬: বর্জ্য ও নিষ্কাশন",
-        "অধ্যায় ৭: চলন ও অঙ্গচালনা",
-        "অধ্যায় ৮: সমন্বয় ও নিয়ন্ত্রণ",
-        "অধ্যায় ৯: মানব জীবনের ধারাবাহিকতা (প্রজনন)",
-        "অধ্যায় ১০: প্রতিরক্ষা (Immunity)",
-        "অধ্যায় ১১: জিনতত্ত্ব ও বিবর্তন",
-        "অধ্যায় ১২: প্রাণীর আচরণ"
-    ]
-};
-
 function init() {
     if(!localStorage.getItem("subjects")) {
-        // শুরু করুন খালি সাবজেক্ট দিয়ে - ইউজার যোগ করবে
+        // প্রথমবার অ্যাপ খোলা হলে জীববিজ্ঞান ২য় পত্র দিয়ে শুরু করুন
         const subjects = {};
+        const chapters = [
+            "অধ্যায় ১: প্রাণীর বিভিন্নতা ও শ্রেণিবিন্যাস",
+            "অধ্যায় ২: প্রাণীর পরিচিতি (হাইড্রা, ঘাসফড়িং, রুই মাছ)",
+            "অধ্যায় ৩: পরিপাক ও শোষণ",
+            "অধ্যায় ৪: রক্ত ও সংবহন",
+            "অধ্যায় ৫: শ্বসন ও শ্বাসক্রিয়া",
+            "অধ্যায় ৬: বর্জ্য ও নিষ্কাশন",
+            "অধ্যায় ৭: চলন ও অঙ্গচালনা",
+            "অধ্যায় ৮: সমন্বয় ও নিয়ন্ত্রণ",
+            "অধ্যায় ৯: মানব জীবনের ধারাবাহিকতা (প্রজনন)",
+            "অধ্যায় ১০: প্রতিরক্ষা (Immunity)",
+            "অধ্যায় ১১: জিনতত্ত্ব ও বিবর্তন",
+            "অধ্যায় ১২: প্রাণীর আচরণ"
+        ];
+        subjects["জীববিজ্ঞান ২য় পত্র"] = chapters.map((ch, i) => ({
+            serial: i + 1,
+            name: ch,
+            complete: false,
+            source: "",
+            cq: false,
+            mcq: false,
+            engi: false,
+            med: false
+        }));
         localStorage.setItem("subjects", JSON.stringify(subjects));
     } else {
         // মাইগ্রেশন: পুরনো ডেটায় নতুন ফিল্ড যোগ করুন
@@ -370,35 +369,6 @@ function deleteSubject(subName) {
         loadSubjects();
     }
 }
-function quickSetup(subName) {
-    const subjects = JSON.parse(localStorage.getItem("subjects"));
-    if(subjects[subName]) {
-        alert(subName + " ইতিমধ্যে আপনার লিস্টে আছে!");
-        return;
-    }
-
-    const chapters = quickSetups[subName];
-    if(!chapters) {
-        alert("সেটআপ পাওয়া যায়নি");
-        return;
-    }
-
-    subjects[subName] = chapters.map((ch, i) => ({
-        serial: i + 1,
-        name: ch,
-        complete: false,
-        source: "",
-        cq: false,
-        mcq: false,
-        engi: false,
-        med: false
-    }));
-
-    localStorage.setItem("subjects", JSON.stringify(subjects));
-    alert(subName + ' এ ' + chapters.length + 'টি অধ্যায় যোগ করা হয়েছে!');
-    loadSubjects();
-}
-
 function prepareNewSubject() {
     const name = document.getElementById("newSubject").value.trim();
     if(!name) {
