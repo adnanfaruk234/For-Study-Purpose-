@@ -156,13 +156,25 @@ function loadSubjects() {
     list.innerHTML = "";
 
     Object.keys(subjects).forEach(sub => {
-        const btn = document.createElement("div");
-        btn.style.cssText = "background: #4CAF50; color: white; padding: 12px 15px; border-radius: 6px; cursor: pointer; display: flex; gap: 10px; align-items: center;";
-        btn.innerHTML = `
-            <span style="flex: 1;" onclick="selectSubject('${sub}')">${sub}</span>
-            <button onclick="deleteSubject('${sub}')" style="background: transparent; border: 2px solid #ff4444; color: #ff4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1; hover: {background: #ff4444; color: white;};">❌</button>
-        `;
-        list.appendChild(btn);
+        const container = document.createElement("div");
+        container.style.cssText = "display: flex; gap: 8px; align-items: center;";
+        
+        // সাবজেক্ট নাম বাটন
+        const subjectBtn = document.createElement("button");
+        subjectBtn.style.cssText = "background: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; flex: 1; font-size: 14px; font-family: 'Noto Sans Bengali', sans-serif;";
+        subjectBtn.innerText = sub;
+        subjectBtn.onclick = () => selectSubject(sub);
+        
+        // ডিলিট বাটন (আলাদা)
+        const deleteBtn = document.createElement("button");
+        deleteBtn.style.cssText = "background: #ff4444; color: white; padding: 10px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px;";
+        deleteBtn.innerText = "❌";
+        deleteBtn.title = "সাবজেক্ট ডিলিট করুন";
+        deleteBtn.onclick = () => deleteSubject(sub);
+        
+        container.appendChild(subjectBtn);
+        container.appendChild(deleteBtn);
+        list.appendChild(container);
     });
     
     // যদি সাবজেক্ট থাকে তাহলে প্রথমটা সিলেক্ট করুন
