@@ -402,9 +402,48 @@ function pasteImport() {
         const imported = JSON.parse(txt);
         handleImportedData(imported);
     } catch(e) {
-        alert('ভুল JSON');
+        alert('ভুল JSON - কপি করা ডাটা সঠিক কিনা চেক করুন');
     }
 }
+
+function handleImportedData(imported) {
+    if(typeof imported !== 'object' || Array.isArray(imported) || imported === null) {
+        alert('ডাটা সঠিক ফরম্যাটে নেই');
+        return;
+    }
+
+    const ok = confirm('OK = সম্পূর্ণ রিপ্লেস করুন। Cancel = মার্জ করুন (নতুন সাবজেক্ট যোগ করবে)');
+    if(ok) {
+        localStorage.setItem('subjects', JSON.stringify(imported));
+        loadSubjects();
+        alert('ডাটা রিপ্লেস করা হয়েছে');
+        document.getElementById('importText').value = '';
+        return;
+    }
+
+    // Merge
+    const subjects = JSON.parse(localStorage.getItem('subjects') || '{}');
+    Object.keys(imported).forEach(sub => {
+        const incomingChapters = Array.isArray(imported[sub]) ? imported[sub] : [];
+        if(!subjects[sub]) {
+            subjects[sub] = incomingChapters;
+        } else {
+            incomingChapters.forEach(r => {
+                const exists = subjects[sub].some(s => s.name === r.name);
+                if(!exists) {
+                    subjects[sub].push(r);
+                }
+            });
+        }
+        subjects[sub].forEach((row, i) => row.serial = i + 1);
+    });
+
+    localStorage.setItem('subjects', JSON.stringify(subjects));
+    loadSubjects();
+    alert('ডাটা মার্জ হয়েছে');
+    document.getElementById('importText').value = '';
+}
+
 
 // Download and upload functionality removed per user request
 
