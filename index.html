@@ -113,6 +113,11 @@ th {
     <button id="themeToggle" onclick="toggleTheme()" title="Toggle dark mode">🌙</button>
 </div>
 
+<div style="display:flex; gap:20px; margin: 10px 0 18px 0; align-items:center;">
+    <div>সমগ্র কমপ্লিট: <strong id="overallPercent">0%</strong></div>
+    <div>নির্বাচিত সাবজেক্ট কমপ্লিট: <strong id="subjectPercent">0%</strong></div>
+</div>
+
 <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
     <h3>📚 সাবজেক্টস ম্যানেজমেন্ট</h3>
     <div style="margin-bottom: 10px;">
@@ -223,6 +228,7 @@ function loadSubjects() {
     
         // ডিলিট লিস্ট লোড করুন
         loadDeleteSubjectList();
+        computePercentages();
     }
 
     function loadDeleteSubjectList() {
@@ -271,6 +277,7 @@ function loadTable(subName = null) {
 
         tbody.appendChild(tr);
     });
+    computePercentages();
 }
 
 function updateField(index, field, value) {
@@ -279,6 +286,7 @@ function updateField(index, field, value) {
     if(!subjects[current]) return;
     subjects[current][index][field] = value;
     localStorage.setItem("subjects", JSON.stringify(subjects));
+    computePercentages();
 }
 
 function deleteChapter(index) {
@@ -347,6 +355,33 @@ function addChapter() {
 }
 
 // Download and upload functionality removed per user request
+
+function computePercentages() {
+    const subjects = JSON.parse(localStorage.getItem('subjects') || '{}');
+    let total = 0, done = 0;
+    Object.keys(subjects).forEach(sub => {
+        const list = Array.isArray(subjects[sub]) ? subjects[sub] : [];
+        list.forEach(ch => {
+            total++;
+            if(ch && ch.complete) done++;
+        });
+    });
+    const overall = total ? Math.round((done / total) * 100) : 0;
+    const overallEl = document.getElementById('overallPercent');
+    if(overallEl) overallEl.innerText = overall + '%';
+
+    const current = document.getElementById('currentSubjectName') ? document.getElementById('currentSubjectName').innerText : '';
+    let stotal = 0, sdone = 0;
+    if(current && subjects[current]) {
+        subjects[current].forEach(ch => {
+            stotal++;
+            if(ch && ch.complete) sdone++;
+        });
+    }
+    const subjectPct = stotal ? Math.round((sdone / stotal) * 100) : 0;
+    const subjectEl = document.getElementById('subjectPercent');
+    if(subjectEl) subjectEl.innerText = subjectPct + '%';
+}
 
 // Theme functions
 function applyTheme(theme) {
