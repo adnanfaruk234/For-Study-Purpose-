@@ -133,6 +133,11 @@ th {
     <button id="themeToggle" onclick="toggleTheme()" title="Toggle dark mode">🌙</button>
 </div>
 
+<div id="aspirantToggle" style="margin:10px 0;">
+    <label><input type="radio" name="aspType" value="engi" checked> Engi aspirant</label>
+    <label style="margin-left: 20px;"><input type="radio" name="aspType" value="med"> Med aspirant</label>
+</div>
+
 <div style="display:flex; gap:20px; margin: 10px 0 18px 0; align-items:center;">
     <div>সমগ্র কমপ্লিট: <strong id="overallPercent">0%</strong></div>
     <div>নির্বাচিত সাবজেক্ট কমপ্লিট: <strong id="subjectPercent">0%</strong></div>
@@ -168,10 +173,10 @@ th {
     <th>অধ্যায়ের নাম</th>
     <th>কমপ্লিট</th>
     <th>সোর্স</th>
-    <th>সিকিউ</th>
-    <th>এমসিকিউ</th>
-    <th>Engi</th>
-    <th>Med</th>
+    <th class="cq-col">সিকিউ</th>
+    <th class="mcq-col">এমসিকিউ</th>
+    <th class="engi-col">Engi</th>
+    <th class="med-col">Med</th>
     <th>অ্যাকশন</th>
     </tr>
     </thead>
@@ -206,8 +211,8 @@ function init() {
                 name: name,
                 complete: false,
                 source: "",
-                cq: "",
-                mcq: "",
+                    cq: false,
+                mcq: false,
                 engi: false,
                 med: false
             }))
@@ -249,6 +254,7 @@ function loadSubjects() {
         // ডিলিট লিস্ট লোড করুন
         loadDeleteSubjectList();
         computePercentages();
+        updateAspirantVisibility();
     }
 
     function loadDeleteSubjectList() {
@@ -288,16 +294,17 @@ function loadTable(subName = null) {
             <td contenteditable="true" onblur="updateField(${index}, 'name', this.innerText)">${row.name}</td>
             <td><input type="checkbox" ${row.complete ? "checked" : ""} onchange="updateField(${index}, 'complete', this.checked)"></td>
             <td><input value="${row.source}" onchange="updateField(${index}, 'source', this.value)"></td>
-            <td><input value="${row.cq}" onchange="updateField(${index}, 'cq', this.value)"></td>
-            <td><input value="${row.mcq}" onchange="updateField(${index}, 'mcq', this.value)"></td>
-            <td><input type="checkbox" ${row.engi ? "checked" : ""} onchange="updateField(${index}, 'engi', this.checked)"></td>
-            <td><input type="checkbox" ${row.med ? "checked" : ""} onchange="updateField(${index}, 'med', this.checked)"></td>
+            <td class="cq-col"><input type="checkbox" ${row.cq ? "checked" : ""} onchange="updateField(${index}, 'cq', this.checked)"></td>
+            <td class="mcq-col"><input type="checkbox" ${row.mcq ? "checked" : ""} onchange="updateField(${index}, 'mcq', this.checked)"></td>
+            <td class="engi-col"><input type="checkbox" ${row.engi ? "checked" : ""} onchange="updateField(${index}, 'engi', this.checked)"></td>
+            <td class="med-col"><input type="checkbox" ${row.med ? "checked" : ""} onchange="updateField(${index}, 'med', this.checked)"></td>
             <td><button onclick="deleteChapter(${index})" style="background: #f44336; padding: 5px 10px; font-size: 12px;">ডিলিট</button></td>
         `;
 
         tbody.appendChild(tr);
     });
     computePercentages();
+    updateAspirantVisibility();
 }
 
 function updateField(index, field, value) {
@@ -363,8 +370,8 @@ function addChapter() {
         name: chapterName,
         complete: false,
         source: "",
-        cq: "",
-        mcq: "",
+        cq: false,
+        mcq: false,
         engi: false,
         med: false
     });
@@ -403,6 +410,26 @@ function computePercentages() {
     if(subjectEl) subjectEl.innerText = subjectPct + '%';
 }
 
+function updateAspirantVisibility() {
+    const type = localStorage.getItem('aspType') || 'engi';
+    document.querySelectorAll('.engi-col').forEach(el => {
+        el.style.display = type === 'engi' ? '' : 'none';
+    });
+    document.querySelectorAll('.med-col').forEach(el => {
+        el.style.display = type === 'med' ? '' : 'none';
+    });
+}
+
+// listen for aspirant radio changes
+const aspirantRadios = document.getElementsByName('aspType');
+for(const r of aspirantRadios) {
+    r.addEventListener('change', function() {
+        localStorage.setItem('aspType', this.value);
+        updateAspirantVisibility();
+    });
+}
+
+
 // Theme functions
 function applyTheme(theme) {
     if(theme === 'dark') document.documentElement.classList.add('dark');
@@ -439,6 +466,11 @@ function loadSavedOrSystemTheme() {
 
 // initialize
 loadSavedOrSystemTheme();
+// set aspirant radio from storage
+const savedAsp = localStorage.getItem('aspType') || 'engi';
+const radio = document.querySelector(`input[name='aspType'][value='${savedAsp}']`);
+if(radio) radio.checked = true;
+updateAspirantVisibility();
 init();
 
 </script>
