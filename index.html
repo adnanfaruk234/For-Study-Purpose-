@@ -152,10 +152,30 @@ th {
 
 <div class="subject-management" style="padding: 15px; border-radius: 8px; margin-bottom: 20px;">
     <h3>📚 সাবজেক্টস ম্যানেজমেন্ট</h3>
-    <div style="margin-bottom: 10px;">
-        <input type="text" id="newSubject" placeholder="নতুন সাবজেক্ট লিখুন" style="width: 70%; padding: 10px;">
-        <button onclick="addSubject()" style="margin-left: 10px; padding: 10px 20px;">+ সাবজেক্ট যোগ করুন</button>
+    
+    <div style="margin-bottom: 15px; background: rgba(76,175,80,0.08); padding: 10px; border-radius: 6px; border-left: 4px solid var(--primary);">
+        <strong>⚡ দ্রুত সেটআপ:</strong>
+        <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px;">
+            <button onclick="quickSetup('জীববিজ্ঞান ২য় পত্র')" style="background: var(--primary); font-size: 12px; padding: 8px 12px;">জীববিজ্ঞান ২য় পত্র (12টি অধ্যায়)</button>
+        </div>
     </div>
+    
+    <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 8px;"><strong>সাবজেক্টের নাম লিখুন:</strong></label>
+        <input type="text" id="newSubject" placeholder="যেমন: Biology, Chemistry, Physics" style="width: 300px; padding: 10px;">
+        <button onclick="prepareNewSubject()" style="margin-left: 10px; padding: 10px 20px;">+ সাবজেক্ট তৈরি করুন</button>
+    </div>
+
+    <div id="chapterInputSection" style="display: none; background: rgba(0,0,0,0.03); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--primary);">
+        <p><strong>সাবজেক্ট: <span id="newSubjectName" style="color: var(--primary);"></span></strong></p>
+        <label style="display: block; margin-bottom: 8px;">চ্যাপ্টার লিস্ট পেস্ট করুন (একটি লাইনে একটি চ্যাপ্টার):</label>
+        <textarea id="chapterListText" placeholder="যেমন:&#10;চ্যাপ্টার ১&#10;চ্যাপ্টার ২&#10;চ্যাপ্টার ৩" style="width:100%;height:120px;"></textarea>
+        <div style="margin-top: 10px;">
+            <button onclick="addChaptersToSubject()" style="padding: 8px 16px; margin-right: 8px;">✦ চ্যাপ্টার যোগ করুন</button>
+            <button onclick="cancelNewSubject()" style="padding: 8px 16px; background: #999;">বাতিল করুন</button>
+        </div>
+    </div>
+
     <div id="subjectList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
 </div>
 
@@ -203,20 +223,25 @@ th {
 
 <script>
 
-const defaultBiology = [
-    "কোষ ও এর গঠন",
-    "কোষ বিভাজন",
-    "কোষ রসায়ন",
-    "অণুজীব",
-    "শৈবাল ও ছত্রাক",
-    "ব্রাইওফাইটা ও টেরিডোফাইটা",
-    "নগ্নবীজী এবং আবৃতবীজী উদ্ভিদ",
-    "টিসু ও টিস্যুতন্ত্র",
-    "উদ্ভিদের শারীরতত্ত্ব",
-    "উদ্ভিদ প্রজনন",
-    "জীবপ্রযুক্তি",
-    "জীবের পরিবেশ, বিস্তার ও সংরক্ষণ"
-];
+let newSubjectForChapters = null; // সাবজেক্ট যোগ করার সময় এখানে তথ্য রাখা হয়
+
+// দ্রুত সেটআপের জন্য প্রি-ফর্ম্যাটেড ডেটা
+const quickSetups = {
+    "জীববিজ্ঞান ২য় পত্র": [
+        "অধ্যায় ১: প্রাণীর বিভিন্নতা ও শ্রেণিবিন্যাস",
+        "অধ্যায় ২: প্রাণীর পরিচিতি (হাইড্রা, ঘাসফড়িং, রুই মাছ)",
+        "অধ্যায় ৩: পরিপাক ও শোষণ",
+        "অধ্যায় ৪: রক্ত ও সংবহন",
+        "অধ্যায় ৫: শ্বসন ও শ্বাসক্রিয়া",
+        "অধ্যায় ৬: বর্জ্য ও নিষ্কাশন",
+        "অধ্যায় ৭: চলন ও অঙ্গচালনা",
+        "অধ্যায় ৮: সমন্বয় ও নিয়ন্ত্রণ",
+        "অধ্যায় ৯: মানব জীবনের ধারাবাহিকতা (প্রজনন)",
+        "অধ্যায় ১০: প্রতিরক্ষা (Immunity)",
+        "অধ্যায় ১১: জিনতত্ত্ব ও বিবর্তন",
+        "অধ্যায় ১২: প্রাণীর আচরণ"
+    ]
+};
 
 function init() {
     if(!localStorage.getItem("subjects")) {
@@ -345,20 +370,96 @@ function deleteSubject(subName) {
         loadSubjects();
     }
 }
-function addSubject() {
-    const name = document.getElementById("newSubject").value;
-    if(!name) return;
+function quickSetup(subName) {
+    const subjects = JSON.parse(localStorage.getItem("subjects"));
+    if(subjects[subName]) {
+        alert(subName + " ইতিমধ্যে আপনার লিস্টে আছে!");
+        return;
+    }
+
+    const chapters = quickSetups[subName];
+    if(!chapters) {
+        alert("সেটআপ পাওয়া যায়নি");
+        return;
+    }
+
+    subjects[subName] = chapters.map((ch, i) => ({
+        serial: i + 1,
+        name: ch,
+        complete: false,
+        source: "",
+        cq: false,
+        mcq: false,
+        engi: false,
+        med: false
+    }));
+
+    localStorage.setItem("subjects", JSON.stringify(subjects));
+    alert(subName + ' এ ' + chapters.length + 'টি অধ্যায় যোগ করা হয়েছে!');
+    loadSubjects();
+}
+
+function prepareNewSubject() {
+    const name = document.getElementById("newSubject").value.trim();
+    if(!name) {
+        alert("সাবজেক্টের নাম লিখুন");
+        return;
+    }
 
     const subjects = JSON.parse(localStorage.getItem("subjects"));
     if(subjects[name]) {
-        alert("এই সাবজেক্ট ইতিমধ্যে আছে!");
+        alert("এই সাবজেক্ট ইতিমধ্যে আছে! অন্য নাম দিন।");
         return;
     }
-    subjects[name] = [];
+
+    // তিনটি state set করুন
+    newSubjectForChapters = name;
+    document.getElementById("newSubjectName").innerText = name;
+    document.getElementById("chapterInputSection").style.display = "block";
+    document.getElementById("chapterListText").value = "";
+    document.getElementById("chapterListText").focus();
+}
+
+function addChaptersToSubject() {
+    if(!newSubjectForChapters) return;
+
+    const chapterText = document.getElementById("chapterListText").value.trim();
+    if(!chapterText) {
+        alert("অন্তত একটি চ্যাপ্টার লিখুন");
+        return;
+    }
+
+    const chapters = chapterText.split('\n').map(ch => ch.trim()).filter(ch => ch); // খালি লাইন বাদ দিন
+    if(chapters.length === 0) {
+        alert("কোনো চ্যাপ্টার পাওয়া যায়নি");
+        return;
+    }
+
+    const subjects = JSON.parse(localStorage.getItem("subjects"));
+    subjects[newSubjectForChapters] = chapters.map((ch, i) => ({
+        serial: i + 1,
+        name: ch,
+        complete: false,
+        source: "",
+        cq: false,
+        mcq: false,
+        engi: false,
+        med: false
+    }));
+
     localStorage.setItem("subjects", JSON.stringify(subjects));
-    document.getElementById("newSubject").value = "";
+    alert(newSubjectForChapters + ' এ ' + chapters.length + 'টি চ্যাপ্টার যোগ করা হয়েছে!');
+    cancelNewSubject();
     loadSubjects();
 }
+
+function cancelNewSubject() {
+    newSubjectForChapters = null;
+    document.getElementById("newSubject").value = "";
+    document.getElementById("chapterListText").value = "";
+    document.getElementById("chapterInputSection").style.display = "none";
+}
+
 
 function addChapter() {
     const chapterName = document.getElementById("newChapter").value;
