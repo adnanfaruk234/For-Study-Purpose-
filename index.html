@@ -66,35 +66,41 @@ th {
 
 <h2>Subject Wise Study Manager</h2>
 
-<input type="text" id="newSubject" placeholder="নতুন সাবজেক্ট লিখুন">
-<button onclick="addSubject()">Add Subject</button>
+<div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h3>📚 সাবজেক্টস ম্যানেজমেন্ট</h3>
+    <div style="margin-bottom: 10px;">
+        <input type="text" id="newSubject" placeholder="নতুন সাবজেক্ট লিখুন" style="width: 70%; padding: 10px;">
+        <button onclick="addSubject()" style="margin-left: 10px; padding: 10px 20px;">+ সাবজেক্ট যোগ করুন</button>
+    </div>
+    <div id="subjectList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+</div>
 
-<br><br>
+<div id="chapterSection" style="display: none;">
+    <h3>📖 চ্যাপ্টার ম্যানেজমেন্ট</h3>
+    <p>নির্বাচিত সাবজেক্ট: <strong id="currentSubjectName"></strong></p>
+    <br>
 
-<select id="subjectSelect" onchange="loadTable()"></select>
+    <input type="text" id="newChapter" placeholder="নতুন অধ্যায়ের নাম লিখুন" style="width: 70%; padding: 10px;">
+    <button onclick="addChapter()" style="margin-left: 10px; padding: 10px 20px;">+ চ্যাপ্টার যোগ করুন</button>
+    <button id="downloadBtn" onclick="downloadData()" style="margin-left: 10px; padding: 10px 20px; background: #008CBA;">📥 ডাটা ডাউনলোড করুন</button>
 
-<br><br>
-
-<input type="text" id="newChapter" placeholder="নতুন অধ্যায়ের নাম লিখুন">
-<button onclick="addChapter()">Add Chapter</button>
-<button id="downloadBtn" onclick="downloadData()">📥 Download Data</button>
-
-<table>
-<thead>
-<tr>
-<th>ক্রমিক নাম্বার</th>
-<th>অধ্যায়ের নাম</th>
-<th>কমপ্লিট</th>
-<th>সোর্স</th>
-<th>সিকিউ</th>
-<th>এমসিকিউ</th>
-<th>Engi</th>
-<th>Med</th>
-<th>অ্যাকশন</th>
-</tr>
-</thead>
-<tbody id="tableBody"></tbody>
-</table>
+    <table>
+    <thead>
+    <tr>
+    <th>ক্রমিক নাম্বার</th>
+    <th>অধ্যায়ের নাম</th>
+    <th>কমপ্লিট</th>
+    <th>সোর্স</th>
+    <th>সিকিউ</th>
+    <th>এমসিকিউ</th>
+    <th>Engi</th>
+    <th>Med</th>
+    <th>অ্যাকশন</th>
+    </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+    </table>
+</div>
 
 </div>
 
@@ -146,22 +152,35 @@ function init() {
 
 function loadSubjects() {
     const subjects = JSON.parse(localStorage.getItem("subjects"));
-    const select = document.getElementById("subjectSelect");
-    select.innerHTML = "";
+    const list = document.getElementById("subjectList");
+    list.innerHTML = "";
 
     Object.keys(subjects).forEach(sub => {
-        const option = document.createElement("option");
-        option.value = sub;
-        option.textContent = sub;
-        select.appendChild(option);
+        const btn = document.createElement("div");
+        btn.style.cssText = "background: #4CAF50; color: white; padding: 12px 15px; border-radius: 6px; cursor: pointer; display: flex; gap: 10px; align-items: center;";
+        btn.innerHTML = `
+            <span style="flex: 1;" onclick="selectSubject('${sub}')">${sub}</span>
+            <button onclick="deleteSubject('${sub}')" style="background: #f44336; border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">✕</button>
+        `;
+        list.appendChild(btn);
     });
-
-    loadTable();
+    
+    // যদি সাবজেক্ট থাকে তাহলে প্রথমটা সিলেক্ট করুন
+    const firstSubject = Object.keys(subjects)[0];
+    if(firstSubject) {
+        selectSubject(firstSubject);
+    }
 }
 
-function loadTable() {
+function selectSubject(subName) {
+    document.getElementById("currentSubjectName").innerText = subName;
+    document.getElementById("chapterSection").style.display = "block";
+    loadTable(subName);
+}
+
+function loadTable(subName = null) {
     const subjects = JSON.parse(localStorage.getItem("subjects"));
-    const current = document.getElementById("subjectSelect").value;
+    const current = subName || document.getElementById("currentSubjectName").innerText;
     const data = subjects[current] || [];
 
     const tbody = document.getElementById("tableBody");
@@ -196,7 +215,7 @@ function updateField(index, field, value) {
 function deleteChapter(index) {
     if(confirm("এই চ্যাপ্টার ডিলিট করতে চান?")) {
         const subjects = JSON.parse(localStorage.getItem("subjects"));
-        const current = document.getElementById("subjectSelect").value;
+        const current = document.getElementById("currentSubjectName").innerText;
         subjects[current].splice(index, 1);
         
         // পুনরায় serial নাম্বার আপডেট করুন
@@ -209,11 +228,23 @@ function deleteChapter(index) {
     }
 }
 
+function deleteSubject(subName) {
+    if(confirm(subName + " সাবজেক্ট ডিলিট করতে চান? সব চ্যাপ্টার হারিয়ে যাবে!")) {
+        const subjects = JSON.parse(localStorage.getItem("subjects"));
+        delete subjects[subName];
+        localStorage.setItem("subjects", JSON.stringify(subjects));
+        loadSubjects();
+    }
+}
 function addSubject() {
     const name = document.getElementById("newSubject").value;
     if(!name) return;
 
     const subjects = JSON.parse(localStorage.getItem("subjects"));
+    if(subjects[name]) {
+        alert("এই সাবজেক্ট ইতিমধ্যে আছে!");
+        return;
+    }
     subjects[name] = [];
     localStorage.setItem("subjects", JSON.stringify(subjects));
     document.getElementById("newSubject").value = "";
@@ -225,7 +256,7 @@ function addChapter() {
     if(!chapterName) return;
 
     const subjects = JSON.parse(localStorage.getItem("subjects"));
-    const current = document.getElementById("subjectSelect").value;
+    const current = document.getElementById("currentSubjectName").innerText;
     if(!subjects[current]) subjects[current] = [];
 
     const newSerial = subjects[current].length + 1;
