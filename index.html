@@ -211,18 +211,8 @@ const defaultBiology = [
 
 function init() {
     if(!localStorage.getItem("subjects")) {
-        const subjects = {
-            "জীববিজ্ঞান প্রথম পত্র": defaultBiology.map((name, index) => ({
-                serial: index + 1,
-                name: name,
-                complete: false,
-                source: "",
-                    cq: false,
-                mcq: false,
-                engi: false,
-                med: false
-            }))
-        };
+        // শুরু করুন খালি সাবজেক্ট দিয়ে - ইউজার যোগ করবে
+        const subjects = {};
         localStorage.setItem("subjects", JSON.stringify(subjects));
     } else {
         // মাইগ্রেশন: পুরনো ডেটায় নতুন ফিল্ড যোগ করুন
