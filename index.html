@@ -101,6 +101,26 @@ th {
 .dark #deleteSubjectList button {
     border: 1px solid rgba(255,255,255,0.06);
 }
+
+/* subject management panels in dark mode */
+.subject-management {
+    background: #f0f8ff;
+}
+.subject-delete {
+    background: #fff5f5;
+}
+
+.dark .subject-management {
+    background: #1e293b; /* darker bluish */
+}
+.dark .subject-delete {
+    background: #422727; /* dark reddish tone */
+    border-left-color: var(--danger);
+}
+.dark .subject-delete h4 {
+    color: var(--danger);
+}
+
 </style>
 </head>
 
@@ -118,7 +138,7 @@ th {
     <div>নির্বাচিত সাবজেক্ট কমপ্লিট: <strong id="subjectPercent">0%</strong></div>
 </div>
 
-<div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+<div class="subject-management" style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
     <h3>📚 সাবজেক্টস ম্যানেজমেন্ট</h3>
     <div style="margin-bottom: 10px;">
         <input type="text" id="newSubject" placeholder="নতুন সাবজেক্ট লিখুন" style="width: 70%; padding: 10px;">
@@ -127,7 +147,7 @@ th {
     <div id="subjectList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
 </div>
 
-<div style="background: #fff5f5; padding: 12px; border-radius: 8px; border-left: 4px solid #f44336; margin-bottom: 20px;">
+<div class="subject-delete" style="background: #fff5f5; padding: 12px; border-radius: 8px; border-left: 4px solid #f44336; margin-bottom: 20px;">
     <h4 style="margin-top: 0; color: #f44336;">🗑️ সাবজেক্ট ডিলিট করুন</h4>
     <div id="deleteSubjectList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
 </div>
